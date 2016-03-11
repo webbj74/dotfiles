@@ -1,0 +1,57 @@
+[alias]
+	f = "!git ls-files | grep -i"
+	filelog = log -u
+	fl = log -u
+	graph = log --all --graph --decorate --oneline -n30
+	grep = grep -EIi
+	hist = log --graph --pretty=format:'%C(yellow)%h%Creset | %d | %Cgreen%ad%Creset | by %C(bold blue)%an%Creset | %s%d' --date=short
+	la = "!git config -l | grep alias | cut -c 7-"
+	ld = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%an]" --decorate --date=relative
+	lds = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%an]" --decorate --date=short
+	le = log --oneline --decorate
+	ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%an]" --decorate --numstat
+	lnc = log --pretty=format:"%h\\ %s\\ [%an]"
+	ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%an]" --decorate
+	# git push --force-with-lease https://robots.thoughtbot.com/git-push-force-with-lease
+	pf = push --force-with-lease
+	sync = "!f() { git checkout master && git fetch --all && git rebase upstream/master && git push -f origin master; }; f"
+	trim = "!f() { for GIT_TRIM_BRANCH in $(git branch --merged | egrep -v \"(\\* | master$)\" ); do git branch -d \"$GIT_TRIM_BRANCH\"; done; }; f"
+
+[color]
+	ui = true
+
+[core]
+	attributesfile = ~/.gitattributes-global
+	editor = vim
+	excludesfile = ~/.gitignore-global
+	pager = /usr/bin/less -+$LESS -FRX
+
+	# Prevent showing files whose names contain non-ASCII symbols as unversioned.
+	# http://michael-kuehnel.de/git/2014/11/21/git-mac-osx-and-german-umlaute.html
+	precomposeunicode = false
+
+	# Make `git rebase` safer on OS X
+	# More info: <http://www.git-tower.com/blog/make-git-rebase-safe-on-osx/>
+	trustctime = false
+
+	# Treat spaces before tabs and all kinds of trailing whitespace as an error
+	# [default] trailing-space: looks for spaces at the end of a line
+	# [default] space-before-tab: looks for spaces before tabs at the beginning of a line
+	whitespace = space-before-tab,-indent-with-non-tab,trailing-space
+
+[credential]
+	helper = /usr/local/bin/git-credential-osxkeychain
+
+[hub]
+	protocol = ssh
+
+[pager]
+	diff = `brew --prefix git`/share/git-core/contrib/diff-highlight/diff-highlight | /usr/bin/less -+$LESS -FRX
+	log = `brew --prefix git`/share/git-core/contrib/diff-highlight/diff-highlight | /usr/bin/less -+$LESS -FRX
+	show = `brew --prefix git`/share/git-core/contrib/diff-highlight/diff-highlight | /usr/bin/less -+$LESS -FRX
+
+[pull]
+	default = simple
+
+[push]
+	default = simple

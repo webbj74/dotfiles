@@ -1,0 +1,17 @@
+# DOTFILES_EMAIL is used to populate things like gitconfig user.email
+# DOTFILES_EMAIL="test@example.com"
+DOTFILES_EMAIL="test@example.com"
+
+# DOTFILES_REALNAME is used to populate things like gitconfig user.name
+# DOTFILES_REALNAME="Automated Testing"
+DOTFILES_REALNAME="Automated Testing"
+
+# DOTFILES_GITHUBBER is used to populate things like gitconfig github.user
+# DOTFILES_GITHUBBER="example"
+DOTFILES_GITHUBBER="example"
+
+# For POSIX compatibility DOTFILES_MACHINE should be a word consisting solely
+# of underscores, digits, and alphabetics from the portable character set and
+# any of the following characters: '!', '%', ',', '@'.
+# DOTFILES_MACHINE="work"
+DOTFILES_MACHINE="work"
