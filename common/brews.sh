@@ -15,6 +15,7 @@ brew install openssl
 brew install pcre
 brew install percona-toolkit
 brew install python
+brew install ruby
 brew install source-highlight
 brew install terminal-notifier
 brew install the_silver_searcher

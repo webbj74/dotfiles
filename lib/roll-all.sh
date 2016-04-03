@@ -87,3 +87,5 @@ php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 php -r "unlink('composer-setup.php');"
 
 "${SCRIPT_BIN}/roll-git"
+"${SCRIPT_BIN}/roll-powerline"
+
