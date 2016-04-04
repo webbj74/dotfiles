@@ -90,65 +90,6 @@ class Powerline:
             self.fgcolor(segment[4]),
             segment[3]))
 
-
-class RepoStats:
-    symbols = {
-        'detached': u'\u2693',
-        'ahead': u'\u2B06',
-        'behind': u'\u2B07',
-        'staged': u'\u2714',
-        'not_staged': u'\u270E',
-        'untracked': u'\u2753',
-        'conflicted': u'\u273C'
-    }
-
-    def __init__(self):
-        self.ahead = 0
-        self.behind = 0
-        self.untracked = 0
-        self.not_staged = 0
-        self.staged = 0
-        self.conflicted = 0
-
-    @property
-    def dirty(self):
-        qualifiers = [
-            self.untracked,
-            self.not_staged,
-            self.staged,
-            self.conflicted,
-        ]
-        return sum(qualifiers) > 0
-
-    def __getitem__(self, _key):
-        return getattr(self, _key)
-
-    def n_or_empty(self, _key):
-        """Given a string name of one of the properties of this class, returns
-        the value of the property as a string when the value is greater than
-        1. When it is not greater than one, returns an empty string.
-
-        As an example, if you want to show an icon for untracked files, but you
-        only want a number to appear next to the icon when there are more than
-        one untracked files, you can do:
-
-            segment = repo_stats.n_or_empty("untracked") + icon_string
-        """
-        return unicode(self[_key]) if int(self[_key]) > 1 else u''
-
-    def add_to_powerline(self, powerline, color):
-        def add(_key, fg, bg):
-            if self[_key]:
-                s = u" {}{} ".format(self.n_or_empty(_key), self.symbols[_key])
-                powerline.append(s, fg, bg)
-        add('ahead', color.GIT_AHEAD_FG, color.GIT_AHEAD_BG)
-        add('behind', color.GIT_BEHIND_FG, color.GIT_BEHIND_BG)
-        add('staged', color.GIT_STAGED_FG, color.GIT_STAGED_BG)
-        add('not_staged', color.GIT_NOTSTAGED_FG, color.GIT_NOTSTAGED_BG)
-        add('untracked', color.GIT_UNTRACKED_FG, color.GIT_UNTRACKED_BG)
-        add('conflicted', color.GIT_CONFLICTED_FG, color.GIT_CONFLICTED_BG)
-
-
 def get_valid_cwd():
     """ We check if the current working directory is valid or not. Typically
         happens when you checkout a different branch on git that doesn't have
@@ -268,6 +209,43 @@ class Color(DefaultColor):
     Because the segments require a 'Color' class for every theme.
     """
     pass
+
+
+class Color(DefaultColor):
+    USERNAME_FG = 15
+    USERNAME_BG = 4
+    USERNAME_ROOT_BG = 1
+
+    HOSTNAME_FG = 15
+    HOSTNAME_BG = 10
+
+    HOME_SPECIAL_DISPLAY = False
+    PATH_FG = 7
+    PATH_BG = 10
+    CWD_FG = 15
+    SEPARATOR_FG = 14
+
+    READONLY_BG = 1
+    READONLY_FG = 7
+
+    REPO_CLEAN_FG = 14
+    REPO_CLEAN_BG = 0
+    REPO_DIRTY_FG = 3
+    REPO_DIRTY_BG = 0
+
+    JOBS_FG = 4
+    JOBS_BG = 8
+
+    CMD_PASSED_FG = 15
+    CMD_PASSED_BG = 2
+    CMD_FAILED_FG = 15
+    CMD_FAILED_BG = 1
+
+    SVN_CHANGES_FG = REPO_DIRTY_FG
+    SVN_CHANGES_BG = REPO_DIRTY_BG
+
+    VIRTUAL_ENV_BG = 15
+    VIRTUAL_ENV_FG = 2
 
 
 import os
@@ -400,6 +378,16 @@ import re
 import subprocess
 import os
 
+GIT_SYMBOLS = {
+    'detached': u'\u2693',
+    'ahead': u'\u2B06',
+    'behind': u'\u2B07',
+    'staged': u'\u2714',
+    'notstaged': u'\u270E',
+    'untracked': u'\u2753',
+    'conflicted': u'\u273C'
+}
+
 def get_PATH():
     """Normally gets the PATH from the OS. This function exists to enable
     easily mocking the PATH in tests.
@@ -431,27 +419,31 @@ def _get_git_detached_branch():
                          env=git_subprocess_env())
     detached_ref = p.communicate()[0].decode("utf-8").rstrip('\n')
     if p.returncode == 0:
-        branch = u'{} {}'.format(RepoStats.symbols['detached'], detached_ref)
+        branch = u'{} {}'.format(GIT_SYMBOLS['detached'], detached_ref)
     else:
         branch = 'Big Bang'
     return branch
 
 
 def parse_git_stats(status):
-    stats = RepoStats()
+    stats = {'untracked': 0, 'notstaged': 0, 'staged': 0, 'conflicted': 0}
     for statusline in status[1:]:
         code = statusline[:2]
         if code == '??':
-            stats.untracked += 1
+            stats['untracked'] += 1
         elif code in ('DD', 'AU', 'UD', 'UA', 'DU', 'AA', 'UU'):
-            stats.conflicted += 1
+            stats['conflicted'] += 1
         else:
             if code[1] != ' ':
-                stats.not_staged += 1
+                stats['notstaged'] += 1
             if code[0] != ' ':
-                stats.staged += 1
+                stats['staged'] += 1
 
     return stats
+
+
+def _n_or_empty(_dict, _key):
+    return _dict[_key] if int(_dict[_key]) > 1 else u''
 
 
 def add_git_segment(powerline):
@@ -468,162 +460,39 @@ def add_git_segment(powerline):
         return
 
     status = pdata[0].decode("utf-8").splitlines()
-    stats = parse_git_stats(status)
+
     branch_info = parse_git_branch_info(status)
+    stats = parse_git_stats(status)
+    dirty = (True if sum(stats.values()) > 0 else False)
 
     if branch_info:
-        stats.ahead = branch_info["ahead"]
-        stats.behind = branch_info["behind"]
         branch = branch_info['local']
     else:
         branch = _get_git_detached_branch()
 
     bg = Color.REPO_CLEAN_BG
     fg = Color.REPO_CLEAN_FG
-    if stats.dirty:
+    if dirty:
         bg = Color.REPO_DIRTY_BG
         fg = Color.REPO_DIRTY_FG
 
     powerline.append(' %s ' % branch, fg, bg)
-    stats.add_to_powerline(powerline, Color)
+
+    def _add(_dict, _key, fg, bg):
+        if _dict[_key]:
+            _str = u' {}{} '.format(_n_or_empty(_dict, _key), GIT_SYMBOLS[_key])
+            powerline.append(_str, fg, bg)
+
+    if branch_info:
+        _add(branch_info, 'ahead', Color.GIT_AHEAD_FG, Color.GIT_AHEAD_BG)
+        _add(branch_info, 'behind', Color.GIT_BEHIND_FG, Color.GIT_BEHIND_BG)
+    _add(stats, 'staged', Color.GIT_STAGED_FG, Color.GIT_STAGED_BG)
+    _add(stats, 'notstaged', Color.GIT_NOTSTAGED_FG, Color.GIT_NOTSTAGED_BG)
+    _add(stats, 'untracked', Color.GIT_UNTRACKED_FG, Color.GIT_UNTRACKED_BG)
+    _add(stats, 'conflicted', Color.GIT_CONFLICTED_FG, Color.GIT_CONFLICTED_BG)
 
 
 add_git_segment(powerline)
-import os
-import subprocess
-
-def get_hg_status():
-    has_modified_files = False
-    has_untracked_files = False
-    has_missing_files = False
-
-    p = subprocess.Popen(['hg', 'status'], stdout=subprocess.PIPE)
-    output = p.communicate()[0].decode("utf-8")
-
-    for line in output.split('\n'):
-        if line == '':
-            continue
-        elif line[0] == '?':
-            has_untracked_files = True
-        elif line[0] == '!':
-            has_missing_files = True
-        else:
-            has_modified_files = True
-    return has_modified_files, has_untracked_files, has_missing_files
-
-def add_hg_segment(powerline):
-    branch = os.popen('hg branch 2> /dev/null').read().rstrip()
-    if len(branch) == 0:
-        return False
-    bg = Color.REPO_CLEAN_BG
-    fg = Color.REPO_CLEAN_FG
-    has_modified_files, has_untracked_files, has_missing_files = get_hg_status()
-    if has_modified_files or has_untracked_files or has_missing_files:
-        bg = Color.REPO_DIRTY_BG
-        fg = Color.REPO_DIRTY_FG
-        extra = ''
-        if has_untracked_files:
-            extra += '+'
-        if has_missing_files:
-            extra += '!'
-        branch += (' ' + extra if extra != '' else '')
-    return powerline.append(' %s ' % branch, fg, bg)
-
-
-add_hg_segment(powerline)
-import subprocess
-
-
-def _add_svn_segment(powerline):
-    is_svn = subprocess.Popen(['svn', 'status'],
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    is_svn_output = is_svn.communicate()[1].decode("utf-8").strip()
-    if len(is_svn_output) != 0:
-        return
-
-    #"svn status | grep -c "^[ACDIMRX\\!\\~]"
-    p1 = subprocess.Popen(['svn', 'status'], stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-    p2 = subprocess.Popen(['grep', '-c', '^[ACDIMR\\!\\~]'],
-            stdin=p1.stdout, stdout=subprocess.PIPE)
-    output = p2.communicate()[0].decode("utf-8").strip()
-    if len(output) > 0 and int(output) > 0:
-        changes = output.strip()
-        powerline.append(' %s ' % changes, Color.SVN_CHANGES_FG, Color.SVN_CHANGES_BG)
-
-
-def add_svn_segment(powerline):
-    """Wraps _add_svn_segment in exception handling."""
-
-    # FIXME This function was added when introducing a testing framework,
-    # during which the 'powerline' object was passed into the
-    # `add_[segment]_segment` functions instead of being a global variable. At
-    # that time it was unclear whether the below exceptions could actually be
-    # thrown. It would be preferable to find out whether they ever will. If so,
-    # write a comment explaining when. Otherwise remove.
-
-    try:
-        _add_svn_segment(powerline)
-    except OSError:
-        pass
-    except subprocess.CalledProcessError:
-        pass
-
-
-add_svn_segment(powerline)
-import os
-import subprocess
-
-def get_fossil_status():
-    has_modified_files = False
-    has_untracked_files = False
-    has_missing_files = False
-    output = os.popen('fossil changes 2>/dev/null').read().strip()
-    has_untracked_files = True if os.popen("fossil extras 2>/dev/null").read().strip() else False
-    has_missing_files = 'MISSING' in output
-    has_modified_files = 'EDITED' in output
-
-    return has_modified_files, has_untracked_files, has_missing_files
-
-def _add_fossil_segment(powerline):
-    subprocess.Popen(['fossil'], stdout=subprocess.PIPE).communicate()[0]
-    branch = ''.join([i.replace('*','').strip() for i in os.popen("fossil branch 2> /dev/null").read().strip().split("\n") if i.startswith('*')])
-    if len(branch) == 0:
-        return
-
-    bg = Color.REPO_CLEAN_BG
-    fg = Color.REPO_CLEAN_FG
-    has_modified_files, has_untracked_files, has_missing_files = get_fossil_status()
-    if has_modified_files or has_untracked_files or has_missing_files:
-        bg = Color.REPO_DIRTY_BG
-        fg = Color.REPO_DIRTY_FG
-        extra = ''
-        if has_untracked_files:
-            extra += '+'
-        if has_missing_files:
-            extra += '!'
-        branch += (' ' + extra if extra != '' else '')
-    powerline.append(' %s ' % branch, fg, bg)
-
-def add_fossil_segment(powerline):
-    """Wraps _add_fossil_segment in exception handling."""
-
-    # FIXME This function was added when introducing a testing framework,
-    # during which the 'powerline' object was passed into the
-    # `add_[segment]_segment` functions instead of being a global variable. At
-    # that time it was unclear whether the below exceptions could actually be
-    # thrown. It would be preferable to find out whether they ever will. If so,
-    # write a comment explaining when. Otherwise remove.
-
-    try:
-        _add_fossil_segment(powerline)
-    except OSError:
-        pass
-    except subprocess.CalledProcessError:
-        pass
-
-
-add_fossil_segment(powerline)
 import os
 import re
 import subprocess
