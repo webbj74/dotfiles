@@ -1,0 +1,18 @@
+CONSOLE_USER=$(ls -l /dev/console | cut -d " " -f 4)
+DOCK_CONFIG="/Users/${CONSOLE_USER}/Library/Preferences/com.apple.dock.plist"
+
+function _restart_dock {
+  killall cfprefsd
+  killall Dock
+}
+
+# HOT CORNERS
+
+# Bottom Left corner task:
+#   5 - Start screen saver
+#   6 - Disable screen saver
+#   10 - Put display to sleep
+sudo -u ${CONSOLE_USER} defaults write "${DOCK_CONFIG}" wvous-bl-corner -int 10
+# Option Key
+sudo -u ${CONSOLE_USER} defaults write "${DOCK_CONFIG}" wvous-bl-modifier -int 524288
+_restart_dock

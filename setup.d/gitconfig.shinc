@@ -1,0 +1,3 @@
+git config --global user.name "J Webb"
+git config --global user.email "webbj74@users.noreply.github.com"
+

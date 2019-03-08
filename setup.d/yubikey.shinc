@@ -1,0 +1,4 @@
+# OSX won't follow symlink, so change it to a hardlink
+PKCS11_LIB="lib/opensc-pkcs11.so"
+rm -v "/usr/local/${PKCS11_LIB}"
+ln -v "$(brew --prefix opensc)/${PKCS11_LIB}" "/usr/local/${PKCS11_LIB}"

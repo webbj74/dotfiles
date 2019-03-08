@@ -1,0 +1,8 @@
+# Configure iterm2
+if [[ -f "${HOME}/Library/Preferences/com.googlecode.iTerm2.plist" ]]; then
+  # Set font to Anonymice 18pt
+  /usr/libexec/PlistBuddy -c "Set 'New Bookmarks':0:'Normal Font' AnonymicePowerline 18" ~/Library/Preferences/com.googlecode.iTerm2.plist
+  /usr/libexec/PlistBuddy -c "Set 'New Bookmarks':0:'Non Ascii Font' AnonymicePowerline 18" ~/Library/Preferences/com.googlecode.iTerm2.plist
+  /usr/libexec/PlistBuddy -c "Set 'New Bookmarks':0:'Columns' 142" ~/Library/Preferences/com.googlecode.iTerm2.plist
+  /usr/libexec/PlistBuddy -c "Set 'New Bookmarks':0:'Rows' 42" ~/Library/Preferences/com.googlecode.iTerm2.plist
+fi

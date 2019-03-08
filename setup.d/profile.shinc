@@ -1,0 +1,8 @@
+# Install the generic shell profile
+SHELL_PROFILE="${HOME}/.profile"
+SHELL_PROFILE_TEMPLATE="${DOTFILES_DIR}/profile"
+cp -v "${SHELL_PROFILE}" "${SHELL_PROFILE}.$(date -u +%F).bak" 2> /dev/null
+cp -v "${SHELL_PROFILE_TEMPLATE}" "${SHELL_PROFILE}"
+
+# Installs all the profile bits, but doesn't remove any
+rsync -av "${SHELL_PROFILE_TEMPLATE}.d/" "${SHELL_PROFILE}.d"

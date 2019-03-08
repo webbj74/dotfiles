@@ -1,0 +1,2 @@
+mkdir -pv "${HOME}/.ssh"
+chmod -v 700 "${HOME}/.ssh"

@@ -1,0 +1,27 @@
+# Installs bash & configures it
+
+# Bash-it is an oh-my-zsh clone
+if [[ ! -d "${HOME}/.bash_it" ]]; then
+  git clone --depth=1 https://github.com/Bash-it/bash-it.git "${HOME}/.bash_it"
+fi
+
+BASH_BASHRC="${HOME}/.bashrc"
+BASH_BASHRC_TEMPLATE="${DOTFILES_DIR}/bashrc"
+
+cp -v "${BASH_BASHRC}" "${BASH_BASHRC}.$(date -u +%F).bak" 2> /dev/null
+cp -v "${BASH_BASHRC_TEMPLATE}" "${BASH_BASHRC}"
+mkdir -pv "${BASH_BASHRC}.d"
+
+# Installs all the profile bits, but doesn't remove any
+rsync -av "${BASH_BASHRC_TEMPLATE}.d/" "${BASH_BASHRC}.d"
+
+# Add it to /etc/shells
+BASH_PATH="$(brew --prefix bash)/bin/bash"
+cat /etc/shells | grep "^${BASH_PATH}"
+if [[ $? != 0 ]]; then
+  echo -e "\n$(brew --prefix bash)/bin/bash" | sudo tee -a /etc/shells
+fi
+if [[ "${SHELL}" != "${BASH_PATH}" ]]; then 
+  chpass -s "${BASH_PATH}"
+fi
+

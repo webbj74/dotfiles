@@ -1,0 +1,7 @@
+# Make sure taskwarrior default config exists
+yes | task config confirmation off
+
+# Add timewarrior hook
+cp -v "$(brew --prefix timewarrior)/share/doc/timew/ext/on-modify.timewarrior" "${HOME}/.task/hooks"
+chmod -v +x "${HOME}/.task/hooks/on-modify.timewarrior"
+
