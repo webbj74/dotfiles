@@ -1,0 +1,14 @@
+mkdir -p "${HOME}/.config"
+
+grep oauth_token........ "${HOME}/.config/hub" &> /dev/null 
+if [[ $? != 0 ]]; then  
+  read -esp "Enter Github OAuth token for hub gem (https://github.com/settings/tokens): "  text
+  echo
+  echo "---
+github.com:
+- user: webbj74
+  oauth_token: $text
+  protocol: git
+" > "${HOME}/.config/hub"
+fi
+

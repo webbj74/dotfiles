@@ -1,0 +1,3 @@
+for phpconf in $(find /usr/local/etc/php -name 'conf.d' -type d); do
+ echo "memory_limit=-1" | tee "${phpconf}/memory.ini"
+done

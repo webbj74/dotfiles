@@ -12,7 +12,7 @@ brew "tasksh"
 brew "timewarrior"
 
 # PHP
-brew "php@7.2"
+brew "php@7.2", link: true
 brew "composer"
 
 # Git
@@ -24,11 +24,12 @@ brew "ykman"
 brew "opensc"
 
 # Apps
+cask "1password"
 cask "docker"
 cask "java"
-cask "phpstorm"
-cask "1password"
 cask "microsoft-remote-desktop-beta"
+cask "mobster"
+cask "phpstorm"
 
 # Fonts
 cask "font-anonymice-powerline"

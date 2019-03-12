@@ -14,9 +14,24 @@ export BASH_IT="/Users/jonathan.webb/.bash_it"
 #export BASH_IT_THEME='bobby'
 # Use the "powerline-multiline" theme
 export BASH_IT_THEME="powerline-multiline"
-export POWERLINE_LEFT_PROMPT="in_vim clock battery user_info cwd scm"
+function __powerline_reporoot_prompt {
+  local reporoot=""
+  local REPOROOT_THEME_PROMPT_COLOR=275
+  local toplevel=$(git rev-parse --show-toplevel 2>> /dev/null)
+
+  if [[ ! -z "${toplevel}" ]]; then
+    reporoot="$(basename ${toplevel})|${REPOROOT_THEME_PROMPT_COLOR}"
+  fi
+  echo "${reporoot}"
+}
+function __powerline_uclock_prompt {
+  echo "$(date -u +"Z${THEME_CLOCK_FORMAT}")|${CLOCK_THEME_PROMPT_COLOR}"
+}
+export POWERLINE_LEFT_PROMPT="in_vim uclock battery reporoot scm"
 export POWERLINE_RIGHT_PROMPT=" "
-export POWERLINE_PROMPT_CHAR="$"
+#export POWERLINE_PROMPT_CHAR="\\[\\033[01;32m\\]\\u@\\h\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$"
+# Hardcoding name & hostname for obfuscation in terminal cut/paste
+export POWERLINE_PROMPT_CHAR="\\[\\033[01;32m\\]me@laptop\\[\\033[00m\\]:\\[\\033[01;34m\\]\\w\\[\\033[00m\\]\\$"
 
 # (Advanced): Change this to the name of your remote repo if you
 # cloned bash-it with a remote other than origin such as `bash-it`.
