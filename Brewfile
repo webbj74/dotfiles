@@ -6,6 +6,8 @@ tap 'homebrew/cask-versions'
 # Brews
 brew "bash"
 brew "bash-completion"
+brew "dnsmasq"
+brew "mysql-client", link: true
 brew "ruby"
 brew "task"
 brew "tasksh"

@@ -1,0 +1,24 @@
+
+# DNS Server
+DNSMASQ_LINE="conf-dir=/usr/local/etc/dnsmasq.d,*.conf"
+DNSMASQ_REGEX=$(echo "${DNSMASQ_LINE}" | sed -e 's/\*/\\\*/g;s/\./\\\./g')
+grep "^${DNSMASQ_REGEX}" "/usr/local/etc/dnsmasq.conf" &> /dev/null
+if [[ $? != 0 ]]; then
+    echo "Altering /usr/local/etc/dnsmasq.conf:"
+    echo "${DNSMASQ_LINE}" | tee -a /usr/local/etc/dnsmasq.conf
+fi
+mkdir -p /usr/local/etc/dnsmasq.d
+echo "Altering /usr/local/etc/dnsmasq.d/development.conf:"
+echo "address=/.test/127.0.0.1" | tee /usr/local/etc/dnsmasq.d/development.conf
+sudo brew services restart dnsmasq
+
+echo "Testing dnsmasq service:"
+dig +nocmd +nostats +nocomments foobar.test @127.0.0.1
+
+# Resolver entry for *.test
+sudo mkdir -p /etc/resolver
+echo "Altering /etc/resolver/test:"
+echo "nameserver 127.0.0.1" | sudo tee /etc/resolver/test
+
+echo "Testing resolver:"
+ping -c 1 foobar.test
